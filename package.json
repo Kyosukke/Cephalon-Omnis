@@ -1,0 +1,12 @@
+{
+	"name": "cephalon-omnis",
+	"version": "1.0.0",
+	"description": "MoonWraith",
+	"main": "main.js",
+	"author": "OQU",
+	"dependencies": {
+		"discord.io": "github:woor/discord.io#gateway_v6",
+		"sqlite": "^2.9.1",
+		"winston": "^2.4.1"
+	}
+}
