@@ -59,10 +59,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
 async function getAllFrames(channelID) {
     var res = await dbUtils.getAllFrames();
-    messageSender(channelID, `Here are the warframes at your disposal:\n${ res }`);
+    messageSender(channelID, res);
 }
 
 async function addUser(channelID, username, frame) {
     var res = await dbUtils.addUser(username, frame);
-    messageSender(channelID, `Welcome in the simulation, ${username}.`);
+    console.log(res);
+    messageSender(channelID, res);
 }

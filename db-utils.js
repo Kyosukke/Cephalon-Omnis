@@ -84,28 +84,36 @@ sqlize.authenticate().then(() => {
 
 }).catch(err => {
 	console.error('Unable to connect.', err);
-})
+});
 
 function addUser(username, frame) {
-	Frame.findOne({
-		where: {
-			name: frame
-		}
+	User.create({
+		username: username,
+		frame: frame,
 	}).then(res => {
-		console.log(res);
-		if (res != null) {
-			User.create({
-				username: username,
-				frame: frame,
-			});
+		return `Welcome in the simulation, ${username}.`;
+	}).catch(err => {
+		if (err.name == "SequelizeUniqueConstraintError") {
+			return `You're already in the simulation, ${username}.`;
 		}
+		else if (err.name == 'test')
+			return `'${frame}' is not a valid option, ${username}.`;
+		else
+			return `Anomaly detected. Please contact anyone with a master degree in fixing the universe.`;
 	});
 }
 
 function getAllFrames() {
-	return Frame.findAll().then(frames => {
-		console.log(frames[0].name);
-		return frames[0].name;
+	return Frame.findAll({
+		attributes: [ 'name' ]
+	}).then(res => {
+		var frames = `Here are the warframes at your disposal:\n`;
+
+		for (var i = 0; i < res.length; i++) {
+			frames += res[i].name + '\n'
+		}
+
+		return frames;
 	});
 }
 
