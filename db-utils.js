@@ -36,7 +36,7 @@ const User = sqlize.define('User', {
 Frame.hasMany(User, { foreignKey: { allowNull: false }});
 
 function generateDatabase() {
-	Frame.sync({ force: true }).then(() => {
+	Frame.sync().then(() => {
 		Frame.create({ name: 'Ash' });
 		Frame.create({ name: 'Atlas' });
 		Frame.create({ name: 'Banshee' });
@@ -73,7 +73,7 @@ function generateDatabase() {
 		Frame.create({ name: 'Wukong' });
 		Frame.create({ name: 'Zephyr' });
 		});
-	User.sync({ force: true });
+	User.sync();
 }
 
 async function initialize() {
@@ -84,8 +84,8 @@ async function initialize() {
 		var frames = await Frame.count();
 	}
 	catch (err) {
-		if (err.name == 'SequelizeDatabaseError') {
-			generateDatabase();
+		if (err.name == 'SequelizeConnectionError' || err.name == 'SequelizeDatabaseError') {
+			await generateDatabase();
 		}
 		else {
 			console.error('Unable to connect.', err);
