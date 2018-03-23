@@ -64,6 +64,5 @@ async function getAllFrames(channelID) {
 
 async function addUser(channelID, username, frame) {
     var res = await dbUtils.addUser(username, frame);
-    console.log(res);
     messageSender(channelID, res);
 }

@@ -33,7 +33,7 @@ const User = sqlize.define('User', {
 	}
 });
 
-User.hasOne(Frame);
+Frame.hasMany(User, { foreignKey: { allowNull: false }});
 
 function generateDatabase() {
 	Frame.sync({ force: true }).then(() => {
@@ -76,46 +76,71 @@ function generateDatabase() {
 	User.sync({ force: true });
 }
 
-sqlize.authenticate().then(() => {
-	console.log('Connection established.');
-	if (Frame.count() <= 0) {
-		generateDatabase();
+async function initialize() {
+	try {
+		await sqlize.authenticate();
+		console.log('Connection established.');
+	
+		var frames = await Frame.count();
 	}
+	catch (err) {
+		if (err.name == 'SequelizeDatabaseError') {
+			generateDatabase();
+		}
+		else {
+			console.error('Unable to connect.', err);
+		}
+	}	
+}
 
-}).catch(err => {
-	console.error('Unable to connect.', err);
-});
+async function addUser(username, frameName) {
+	try {
+		var frame = await Frame.findOne({
+			where: { name: frameName },
+			attributes: [ 'id' ]
+		});
 
-function addUser(username, frame) {
-	User.create({
-		username: username,
-		frame: frame,
-	}).then(res => {
+		if (frame == null) {
+			return `'${frameName}' is not a valid option, ${username}.`;
+		}
+
+		await User.create({
+			username: username,
+			FrameId: frame.id,
+		});
+
 		return `Welcome in the simulation, ${username}.`;
-	}).catch(err => {
+	}
+	catch (err) {
+		console.log(err);
 		if (err.name == "SequelizeUniqueConstraintError") {
 			return `You're already in the simulation, ${username}.`;
 		}
-		else if (err.name == 'test')
-			return `'${frame}' is not a valid option, ${username}.`;
 		else
 			return `Anomaly detected. Please contact anyone with a master degree in fixing the universe.`;
-	});
+	}
 }
 
-function getAllFrames() {
-	return Frame.findAll({
-		attributes: [ 'name' ]
-	}).then(res => {
-		var frames = `Here are the warframes at your disposal:\n`;
+async function getAllFrames() {
+	try {
+		var frames = await Frame.findAll({
+			attributes: [ 'name' ]
+		});
 
-		for (var i = 0; i < res.length; i++) {
-			frames += res[i].name + '\n'
+		var res = `Here are the warframes at your disposal:\n`;
+
+		for (var i = 0; i < frames.length; i++) {
+			res += frames[i].name + '\n'
 		}
 
-		return frames;
-	});
+		return res;
+	}
+	catch (err) {
+		return `Anomaly detected. Please contact anyone with a master degree in fixing the universe.`;
+	}
 }
+
+initialize();
 
 module.exports = {
 	addUser: addUser,
